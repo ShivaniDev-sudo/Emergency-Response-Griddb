@@ -1,0 +1,89 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f6f9;
+    color: #333;
+}
+
+.header-container {
+    background-color: #1e293b;
+    color: #fff;
+    padding: 20px 40px;
+    text-align: center;
+}
+
+.header-container h1 {
+    margin: 0;
+    font-size: 28px;
+}
+
+.header-container p {
+    color: #94a3b8;
+    margin-top: 8px;
+    font-size: 14px;
+}
+
+.toolbar {
+    padding: 20px 40px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.btn {
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.btn:hover {
+    background-color: #2563eb;
+}
+
+.metrics-cards {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    padding: 0 40px 20px;
+}
+
+.card {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    padding: 20px 30px;
+    min-width: 250px;
+    text-align: center;
+}
+
+.card h3 {
+    margin-top: 0;
+    font-size: 14px;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.card h2 {
+    margin: 10px 0 0;
+    font-size: 32px;
+    color: #0f172a;
+}
+
+.warning-card h2 {
+    color: #ef4444; 
+}
+
+.chart-wrapper {
+    background: #fff;
+    margin: 0 40px 40px;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    height: 400px;
+}

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Emergency Services Insight Dashboard</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+</head>
+<body>
+    <div class="header-container">
+        <h1>Critical Incident Response Times & Delays</h1>
+        <p>Live Aggregation Supported by GridDB Time-Series Engines</p>
+    </div>
+
+    <div class="toolbar">
+        <button id="syncTriggerBtn" class="btn">Sync Socrata Data ➔ GridDB</button>
+        <span id="syncStatus">Status: Idle</span>
+    </div>
+
+    <div class="metrics-cards">
+        <div class="card warning-card">
+            <h3>Current Running Average</h3>
+            <h2 id="live_average_time">...</h2>
+        </div>
+        <div class="card">
+            <h3>Target SLA Goal</h3>
+            <h2>420 Seconds</h2>
+        </div>
+    </div>
+    
+    <div class="chart-wrapper">
+        <canvas id="timeSeriesDelayChart"></canvas>
+    </div>
+
+    <script th:src="@{/js/dashboardLogic.js}"></script>
+</body>
+</html>
