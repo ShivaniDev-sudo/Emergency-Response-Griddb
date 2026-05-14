@@ -107,7 +107,7 @@ public class GridDBPersistenceService {
                 os.write(input, 0, input.length);
             }
 
-            // Fallback for dashboard mock if Cloud cannot be reached immediately
+            // Fallback to live API data if Cloud cannot be reached immediately
             if (conn.getResponseCode() != 200) {
                 logger.warn("Could not fetch logs from GridDB Cloud. HTTP {}", conn.getResponseCode());
                 return logs;

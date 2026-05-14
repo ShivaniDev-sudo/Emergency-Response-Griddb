@@ -43,7 +43,7 @@ public class DashboardController {
         // Will return empty if GridDB uninitialized, gracefully handled by UI
         List<IncidentLog> recent = dbService.fetchRecentLogs();
         
-        // Setup mock if gridDB is disconnected so UI testing works implicitly
+        // Fallback to live API data if gridDB is disconnected
         if (recent.isEmpty()) {
              recent = ingestionService.fetchLiveIncidents(); 
         }
