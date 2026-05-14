@@ -30,7 +30,7 @@ GridDB stands out as the ideal choice for this use case for several interconnect
 
 Our solution consists of a Spring Boot application acting as the central intelligence hub, connecting three distinct layers:
 
-1. **Data Ingestion Layer:** Polls the **Seattle Real-Time Fire 911 Calls API** (via the Socrata Open Data platform) at a configurable interval to continuously fetch live operational dispatch data. In a production environment, this layer could be replaced by a direct Kafka stream from the dispatch CAD (Computer-Aided Dispatch) system for true sub-second latency.
+1. **Data Ingestion Layer:** Polls the **San Francisco Fire Department Calls for Service API** (via the Socrata Open Data platform) at a configurable interval to continuously fetch live operational dispatch data. In a production environment, this layer could be replaced by a direct Kafka stream from the dispatch CAD (Computer-Aided Dispatch) system for true sub-second latency.
 
 2. **Transformation & Storage Layer:** Applies business logic to each raw incident record—primarily calculating the Response Gap (Time of Arrival minus Time of Dispatch)—and persists the enriched record to a **GridDB Cloud** Time-Series container using its REST API. This layer also handles deduplication to ensure that re-polled records don't create duplicate entries in the store.
 
@@ -70,13 +70,13 @@ We use a Java Service within Spring Boot to bridge the gap between public open d
 
 ### **1. Fetching Live Incident Logs**
 
-The following service fetches the 50 most recent incidents from the Seattle Open Data portal. The Socrata API returns JSON records with fields including `datetime` (the report time), `type` (incident classification), and geographic coordinates. We parse these fields, then simulate the operational "arrival" event to calculate the delay metric for our proof-of-concept.
+The following service fetches the 50 most recent incidents from the San Francisco Open Data portal. The Socrata API returns JSON records with fields including `received_dttm` (the report time), `on_scene_dttm` (the arrival time), `call_type` (incident classification), and geographic coordinates. We parse these timestamps to calculate the actual response delay metric.
 
 ```java
 @Service
 public class OpenDataIngestionService {
 
-    private static final String SOCRATA_API_URL = "https://data.seattle.gov/resource/kzjm-xkqj.json?$limit=50";
+    private static final String SOCRATA_API_URL = "https://data.sfgov.org/resource/nuek-vuh3.json?$where=on_scene_dttm%20IS%20NOT%20NULL&$limit=50&$order=received_dttm%20DESC";
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
 
     public List<IncidentLog> fetchLiveIncidents() {
@@ -92,19 +92,22 @@ public class OpenDataIngestionService {
                 JSONObject obj = jsonArray.getJSONObject(i);
 
                 String incidentId = obj.optString("incident_number", "UNKNOWN");
-                String incidentType = obj.optString("type", "UNKNOWN");
-                String reportedTimeStr = obj.optString("datetime");
+                String incidentType = obj.optString("call_type", "UNKNOWN");
+                String reportedTimeStr = obj.optString("received_dttm");
+                String arrivalTimeStr = obj.optString("on_scene_dttm");
 
-                if (reportedTimeStr.isEmpty()) continue;
+                if (reportedTimeStr.isEmpty() || arrivalTimeStr.isEmpty()) continue;
 
                 LocalDateTime reportedTime = LocalDateTime.parse(reportedTimeStr, FORMATTER);
+                LocalDateTime arrivalTime = LocalDateTime.parse(arrivalTimeStr, FORMATTER);
 
-                // Simulation: Random delay gap for demonstration
-                long delaySeconds = (long) (Math.random() * 840) + 120;
-                LocalDateTime arrivalTime = reportedTime.plusSeconds(delaySeconds);
+                long delaySeconds = ChronoUnit.SECONDS.between(reportedTime, arrivalTime);
+                if (delaySeconds < 0) delaySeconds = 0; // Sanity check
 
-                double lat = obj.optDouble("latitude", 47.6062);
-                double lon = obj.optDouble("longitude", -122.3321);
+                double lat = 37.7749; // Default SF lat
+                double lon = -122.4194; // Default SF lon
+                
+                // ... parse nested case_location coordinates ...
 
                 logs.add(new IncidentLog(
                         Date.from(arrivalTime.atZone(ZoneId.systemDefault()).toInstant()),
@@ -124,7 +127,7 @@ public class OpenDataIngestionService {
 }
 ```
 
-The deduplication strategy uses a composite hash of `rawDatetime + rawType` as the `incidentId`. When persisting, GridDB's time-series container will reject a row whose primary `timestamp` key already exists, providing a natural idempotency guard at the database level.
+The deduplication strategy uses the source's native `incident_number` as the `incidentId`. When persisting, GridDB's time-series container will reject a row whose primary `timestamp` key already exists, providing a natural idempotency guard at the database level.
 
 ### **2. Persisting to GridDB Cloud via REST API**
 
