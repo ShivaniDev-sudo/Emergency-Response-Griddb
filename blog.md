@@ -1,3 +1,6 @@
+
+![Emergency Analytics Featured Image](my-griddb-app/img/featured.png)
+
 # **High-Velocity Emergency Analytics: Monitoring Response Time-Series Delays with GridDB Cloud**
 
 In the world of emergency services, time isn't just a metric—it's the line between safety and catastrophe. For municipal fire and rescue departments, the ability to monitor, analyze, and minimize the "Response Gap"—the time between a 911 call being logged and a unit arriving on scene—is not just an operational priority. It is a public mandate.
